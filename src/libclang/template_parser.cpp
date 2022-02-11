@@ -52,12 +52,18 @@ std::unique_ptr<cpp_template_parameter> parse_type_parameter(const detail::parse
     detail::cxtoken_stream stream(tokenizer, cur);
     auto                   name = detail::get_cursor_name(cur);
 
-    // syntax: typename/class [...] name [= ...]
-    auto keyword = cpp_template_keyword::keyword_class;
+    // syntax: typename/class/concept [...] name [= ...]
+    auto keyword = cpp_template_keyword::keyword_concept;
     if (detail::skip_if(stream, "typename"))
         keyword = cpp_template_keyword::keyword_typename;
+    else if (detail::skip_if(stream, "class"))
+        keyword = cpp_template_keyword::keyword_class;
     else
-        detail::skip(stream, "class");
+    {
+        stream.bump();
+        if (stream.peek() == "<")
+            detail::skip_brackets(stream);
+    }
 
     auto variadic = false;
     if (detail::skip_if(stream, "..."))
@@ -126,16 +132,22 @@ std::unique_ptr<cpp_template_template_parameter> parse_template_parameter(
     detail::cxtoken_stream stream(tokenizer, cur);
     auto                   name = detail::get_cursor_name(cur);
 
-    // syntax: template <…> class/typename [...] name [= …]
+    // syntax: template <…> class/typename/concept [...] name [= …]
     detail::skip(stream, "template");
     detail::skip_brackets(stream);
 
-    auto keyword = cpp_template_keyword::keyword_class;
+    auto keyword = cpp_template_keyword::keyword_concept;
     if (detail::skip_if(stream, "typename"))
         keyword = cpp_template_keyword::keyword_typename;
+    else if (detail::skip_if(stream, "class"))
+        keyword = cpp_template_keyword::keyword_class;
     else
-        detail::skip(stream, "class");
-
+    {
+        stream.bump();
+        if (stream.peek() == "<")
+            detail::skip_brackets(stream);
+    }
+    
     auto is_variadic = detail::skip_if(stream, "...");
     detail::skip(stream, name.c_str());
 
