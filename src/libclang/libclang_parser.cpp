@@ -286,6 +286,11 @@ bool is_valid_binary(const std::string& binary)
 
 void add_default_include_dirs(libclang_compile_config& config)
 {
+    //CHANGE BEGIN
+#if defined(__APPLE__)
+    return;
+#endif
+    //CHANGE END
     std::string  verbose_output;
     std::string  language = config.use_c() ? "-xc" : "-xc++";
     tpl::Process process(
@@ -507,6 +512,17 @@ void libclang_compile_config::do_set_flags(cpp_standard standard, compile_flags 
 
     if (flags & compile_flag::ms_extensions)
         add_flag("-fms-extensions");
+    
+    //CHANGE BEGIN
+#if defined(__APPLE__)
+    add_flag("-isysroot/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk");
+    
+    //https://github.com/clangd/clangd/issues/2243
+    add_flag("-Xclang");
+    add_flag("-fno-cxx-modules");
+    
+#endif
+    //CHANGE END
 }
 
 bool libclang_compile_config::do_enable_feature(std::string name)
