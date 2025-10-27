@@ -1127,7 +1127,11 @@ detail::preprocessor_output detail::preprocess(const libclang_compile_config& co
         else if (in_string == false && starts_with(p, "'"))
         {
             if (in_char == false && p.ptr() != preprocessed.file.c_str()
-                && std::isdigit(p.ptr()[-1]))
+            // CHANGE BEGIN
+            // The original code does not correctly parse separators in hex literals like
+            // 0xFFFF'FFFF which is used in MSVCs xatomic_wait header
+                && std::isxdigit(p.ptr()[-1])) //std::isdigit(p.ptr()[-1]))
+            // CHANGE END
             {
                 // It's a digit separator, not a char literal.
             }
