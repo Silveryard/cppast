@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.1)
+#CHANGE START
+cmake_minimum_required(VERSION 3.5)
+#CHANGE END
 
 project(tiny-process-library)
 
